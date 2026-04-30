@@ -13,7 +13,7 @@ struct SRCWConfig
 {
     bool Console          = false;
     bool ClearOnly        = false;
-    int  PhaseDelayMs     = 750;
+    int  PhaseDelayMs     = 500;
     bool HotkeyEnabled    = false;  // false = autorun on menu load
     int  UnlockKey        = 0xC0;   // VK_OEM_3 (~)
 
@@ -54,7 +54,7 @@ struct SRCWConfig
 };
 
 inline SRCWConfig cfg;
-inline const char ConfigFileName[] = ".\\UNION\\Binaries\\Win64\\SRCW.ini";
+inline const char ConfigFileName[] = "SRCW.ini";
 
 inline bool     bCleared = false;
 inline int      unlockPhase = -1;
