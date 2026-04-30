@@ -9,7 +9,15 @@ inline HMODULE CurrentModule = nullptr;
 void LoadConfig()
 {
     std::ifstream file(ConfigFileName);
-    if (!file.is_open()) { WriteDefaultConfig(); file.open(ConfigFileName); if (!file.is_open()) return; }
+    if (!file.is_open()) {
+        WriteDefaultConfig();
+        file.open(ConfigFileName);
+        if (!file.is_open()) {
+            std::cout << "[SRCW] WARNING: Cannot open or create " << ConfigFileName << "\n";
+            std::cout << "[SRCW] Using default settings (all unlocks enabled)\n";
+            return;
+        }
+    }
     std::string line;
     while (std::getline(file, line)) {
         if (line.empty() || line[0] == ';' || line[0] == '#') continue;
@@ -35,7 +43,6 @@ void LoadConfig()
         else if (key == "GadgetPlate") cfg.GadgetPlate = b;
         else if (key == "Challenges") cfg.Challenges = b;
         else if (key == "Achievements") cfg.Achievements = b;
-        //else if (key == "SuperSonicAll") cfg.SuperSonicAll = b;
         else if (key == "StagesDLC") cfg.StagesDLC = b;
         else if (key == "StagesGPOpen") cfg.StagesGPOpen = b;
         else if (key == "StagesSecret") cfg.StagesSecret = b;
@@ -56,12 +63,16 @@ void LoadConfig()
     }
     file.close();
     if (cfg.ClearOnly) bUnlockDone = true;
+    std::cout << "[SRCW] Config loaded successfully\n";
 }
 
 void WriteDefaultConfig()
 {
     std::ofstream f(ConfigFileName, std::ofstream::out | std::ofstream::trunc);
-    if (!f.is_open()) return;
+    if (!f.is_open()) {
+        std::cout << "[SRCW] ERROR: Cannot write default config to " << ConfigFileName << "\n";
+        return;
+    }
     f << "; SRCW Unlocker Config (Reflection Build)\n";
     f << "; 1=enable, 0=disable — changes on next launch\n\n";
     f << "; --- General ---\n";
@@ -77,7 +88,7 @@ void WriteDefaultConfig()
     f << "HonorTitles 1\nDrivers 1\nMachineCustomize 1\nColorPresets 1\nMirrorSpeed 1\nMusic 1\nGadgetPlate 1\nChallenges 1\n\n";
     f << "; --- Optional (OFF by default) ---\n";
     f << "; WARNING: Achievements will permanently unlock on Steam\nAchievements 0\n";
-    f << "; Super Sonic selectable + Fever mode in Race Park/Time Trial\nSuperSonicAll 1\n\n";
+    f << "; Super Sonic selectable + Fever mode in Race Park/Time Trial\n; SuperSonicAll 1\n\n";
     f << "; --- Stage Unlocks ---\n";
     f << "StagesDLC 1\nStagesGPOpen 1\nStagesSecret 1\n\n";
     f << "; --- New Flag Clearing ---\n";
@@ -85,6 +96,7 @@ void WriteDefaultConfig()
     f << "NF_PartsSpeed 1\nNF_PartsAccel 1\nNF_PartsHandle 1\nNF_PartsPower 1\nNF_PartsDash 1\n";
     f << "NF_Horn 1\nNF_HonorTitles 1\nNF_Jukebox 1\nNF_Challenges 1\nNF_Rewards 1\n";
     f.close();
+    std::cout << "[SRCW] Default config written to " << ConfigFileName << "\n";
 }
 
 void Init()
