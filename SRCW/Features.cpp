@@ -1,4 +1,172 @@
 #include "Features.h"
+#include <Windows.h>
+#include <iostream>
+#include <string>
+
+// =============================================================================
+// 配置结构体定义
+// =============================================================================
+struct Config {
+    // General
+    bool Console = false;
+    bool ClearOnly = false;
+    int PhaseDelayMs = 500;
+
+    // Trigger
+    bool HotkeyEnabled = false;
+    int UnlockKey = 192;
+
+    // DLC Gate Removal
+    bool ClearCharaDLC = true;
+    bool ClearMachineDLC = true;
+    bool ClearHonorDLC = true;
+    bool ClearAlbumDLC = true;
+    bool ClearStickerDLC = true;
+
+    // Save Data Unlocks
+    bool HonorTitles = true;
+    bool Drivers = true;
+    bool MachineCustomize = true;
+    bool ColorPresets = true;
+    bool MirrorSpeed = true;
+    bool Music = true;
+    bool GadgetPlate = true;
+    bool Challenges = true;
+
+    // Optional
+    bool Achievements = false;
+    bool SuperSonicAll = true;
+
+    // Stage Unlocks
+    bool StagesDLC = true;
+    bool StagesGPOpen = true;
+    bool StagesSecret = true;
+
+    // New Flag Clearing
+    bool NF_CompleteMachine = true;
+    bool NF_Sticker = true;
+    bool NF_ColorPreset = true;
+    bool NF_Gadget = true;
+    bool NF_PartsSpeed = true;
+    bool NF_PartsAccel = true;
+    bool NF_PartsHandle = true;
+    bool NF_PartsPower = true;
+    bool NF_PartsDash = true;
+    bool NF_Horn = true;
+    bool NF_HonorTitles = true;
+    bool NF_Jukebox = true;
+    bool NF_Challenges = true;
+    bool NF_Rewards = true;
+};
+
+// 全局配置实例
+Config cfg;
+
+// =============================================================================
+// INI 读取辅助函数
+// =============================================================================
+static int ReadIniInt(const char* section, const char* key, int defaultValue, const char* filename)
+{
+    return GetPrivateProfileIntA(section, key, defaultValue, filename);
+}
+
+static bool ReadIniBool(const char* section, const char* key, bool defaultValue, const char* filename)
+{
+    return GetPrivateProfileIntA(section, key, defaultValue ? 1 : 0, filename) != 0;
+}
+
+// =============================================================================
+// 加载配置文件
+// =============================================================================
+void LoadConfig()
+{
+    const char* iniPath = "SRCW.ini";
+
+    // 检查文件是否存在，如果不存在则创建默认配置
+    DWORD attribs = GetFileAttributesA(iniPath);
+    if (attribs == INVALID_FILE_ATTRIBUTES) {
+        // 创建默认 INI 文件
+        FILE* f = nullptr;
+        fopen_s(&f, iniPath, "w");
+        if (f) {
+            fprintf(f, "; SRCW Unlocker Config (Reflection Build)\n");
+            fprintf(f, "; 1=enable, 0=disable\n\n");
+            fprintf(f, "[General]\nConsole=0\nClearOnly=0\nPhaseDelayMs=500\n\n");
+            fprintf(f, "[Trigger]\nHotkeyEnabled=0\nUnlockKey=192\n\n");
+            fprintf(f, "[DLC]\nClearCharaDLC=1\nClearMachineDLC=1\nClearHonorDLC=1\n");
+            fprintf(f, "ClearAlbumDLC=1\nClearStickerDLC=1\n\n");
+            fprintf(f, "[Unlocks]\nHonorTitles=1\nDrivers=1\nMachineCustomize=1\n");
+            fprintf(f, "ColorPresets=1\nMirrorSpeed=1\nMusic=1\nGadgetPlate=1\nChallenges=1\n\n");
+            fprintf(f, "[Optional]\nAchievements=0\nSuperSonicAll=1\n\n");
+            fprintf(f, "[Stages]\nStagesDLC=1\nStagesGPOpen=1\nStagesSecret=1\n\n");
+            fprintf(f, "[NewFlags]\nNF_CompleteMachine=1\nNF_Sticker=1\nNF_ColorPreset=1\n");
+            fprintf(f, "NF_Gadget=1\nNF_PartsSpeed=1\nNF_PartsAccel=1\nNF_PartsHandle=1\n");
+            fprintf(f, "NF_PartsPower=1\nNF_PartsDash=1\nNF_Horn=1\nNF_HonorTitles=1\n");
+            fprintf(f, "NF_Jukebox=1\nNF_Challenges=1\nNF_Rewards=1\n");
+            fclose(f);
+        }
+    }
+
+    // 读取配置（使用空section，因为原INI没有section头）
+    // 注意：原INI没有 [Section] 头，GetPrivateProfileInt 可以用 NULL 作为 section
+
+    // General
+    cfg.Console = ReadIniBool(nullptr, "Console", false, iniPath);
+    cfg.ClearOnly = ReadIniBool(nullptr, "ClearOnly", false, iniPath);
+    cfg.PhaseDelayMs = ReadIniInt(nullptr, "PhaseDelayMs", 500, iniPath);
+
+    // Trigger
+    cfg.HotkeyEnabled = ReadIniBool(nullptr, "HotkeyEnabled", false, iniPath);
+    cfg.UnlockKey = ReadIniInt(nullptr, "UnlockKey", 192, iniPath);
+
+    // DLC Gate Removal
+    cfg.ClearCharaDLC = ReadIniBool(nullptr, "ClearCharaDLC", true, iniPath);
+    cfg.ClearMachineDLC = ReadIniBool(nullptr, "ClearMachineDLC", true, iniPath);
+    cfg.ClearHonorDLC = ReadIniBool(nullptr, "ClearHonorDLC", true, iniPath);
+    cfg.ClearAlbumDLC = ReadIniBool(nullptr, "ClearAlbumDLC", true, iniPath);
+    cfg.ClearStickerDLC = ReadIniBool(nullptr, "ClearStickerDLC", true, iniPath);
+
+    // Save Data Unlocks
+    cfg.HonorTitles = ReadIniBool(nullptr, "HonorTitles", true, iniPath);
+    cfg.Drivers = ReadIniBool(nullptr, "Drivers", true, iniPath);
+    cfg.MachineCustomize = ReadIniBool(nullptr, "MachineCustomize", true, iniPath);
+    cfg.ColorPresets = ReadIniBool(nullptr, "ColorPresets", true, iniPath);
+    cfg.MirrorSpeed = ReadIniBool(nullptr, "MirrorSpeed", true, iniPath);
+    cfg.Music = ReadIniBool(nullptr, "Music", true, iniPath);
+    cfg.GadgetPlate = ReadIniBool(nullptr, "GadgetPlate", true, iniPath);
+    cfg.Challenges = ReadIniBool(nullptr, "Challenges", true, iniPath);
+
+    // Optional
+    cfg.Achievements = ReadIniBool(nullptr, "Achievements", false, iniPath);
+    cfg.SuperSonicAll = ReadIniBool(nullptr, "SuperSonicAll", true, iniPath);
+
+    // Stage Unlocks
+    cfg.StagesDLC = ReadIniBool(nullptr, "StagesDLC", true, iniPath);
+    cfg.StagesGPOpen = ReadIniBool(nullptr, "StagesGPOpen", true, iniPath);
+    cfg.StagesSecret = ReadIniBool(nullptr, "StagesSecret", true, iniPath);
+
+    // New Flag Clearing
+    cfg.NF_CompleteMachine = ReadIniBool(nullptr, "NF_CompleteMachine", true, iniPath);
+    cfg.NF_Sticker = ReadIniBool(nullptr, "NF_Sticker", true, iniPath);
+    cfg.NF_ColorPreset = ReadIniBool(nullptr, "NF_ColorPreset", true, iniPath);
+    cfg.NF_Gadget = ReadIniBool(nullptr, "NF_Gadget", true, iniPath);
+    cfg.NF_PartsSpeed = ReadIniBool(nullptr, "NF_PartsSpeed", true, iniPath);
+    cfg.NF_PartsAccel = ReadIniBool(nullptr, "NF_PartsAccel", true, iniPath);
+    cfg.NF_PartsHandle = ReadIniBool(nullptr, "NF_PartsHandle", true, iniPath);
+    cfg.NF_PartsPower = ReadIniBool(nullptr, "NF_PartsPower", true, iniPath);
+    cfg.NF_PartsDash = ReadIniBool(nullptr, "NF_PartsDash", true, iniPath);
+    cfg.NF_Horn = ReadIniBool(nullptr, "NF_Horn", true, iniPath);
+    cfg.NF_HonorTitles = ReadIniBool(nullptr, "NF_HonorTitles", true, iniPath);
+    cfg.NF_Jukebox = ReadIniBool(nullptr, "NF_Jukebox", true, iniPath);
+    cfg.NF_Challenges = ReadIniBool(nullptr, "NF_Challenges", true, iniPath);
+    cfg.NF_Rewards = ReadIniBool(nullptr, "NF_Rewards", true, iniPath);
+
+    // 打印配置摘要
+    std::cout << "[SRCW] Config loaded from SRCW.ini\n";
+    std::cout << "[SRCW] HotkeyEnabled=" << cfg.HotkeyEnabled 
+              << " UnlockKey=" << cfg.UnlockKey 
+              << " PhaseDelay=" << cfg.PhaseDelayMs << "ms\n";
+}
 
 // =============================================================================
 // Steam Achievement Unlocking
@@ -39,62 +207,32 @@ void Cleanup() { if (cfg.Console) FreeConsole(); }
 
 // =============================================================================
 // Super Sonic — Native ExecFunction pointer swap
-//
-// IsDriverSelectable and GetCharaSelectIndexByDriverId are called as native
-// C++ calls that bypass ProcessEvent. Our ProcessEvent hook never sees them.
-//
-// However, UE4 stores a function pointer (ExecFunction) at UFunction+0xD8.
-// When ProcessEvent dispatches a native function, it calls this pointer.
-// We REPLACE it with our own function. Our function calls the original,
-// then overrides the return value for Super Sonic (driver 46).
-//
-// ExecFunction signature: void (*)(void* Context, void* TheStack, void* Result)
-//   Context = UObject* (the CDO for BPFL statics)
-//   TheStack = FFrame& (stack frame, we don't need to parse it)
-//   Result = RESULT_DECL = pointer to ReturnValue in the params buffer
-//
-// IsDriverSelectable params layout:
-//   [0x00] UObject* WorldContextObject (8 bytes)
-//   [0x08] uint8    InDriverId         (1 byte)
-//   [0x09] bool     ReturnValue        (1 byte)
-//   Result = &Params[0x09], so InDriverId = *(Result - 1)
-//
-// GetCharaSelectIndexByDriverId params layout:
-//   [0x00] uint8    InDriverId         (1 byte)
-//   [0x01] pad      (3 bytes)
-//   [0x04] int32    ReturnValue        (4 bytes)
-//   Result = &Params[0x04], so InDriverId = *(Result - 4)
 // =============================================================================
 
 using FNativeFuncPtr = void (*)(void* Context, void* TheStack, void* Result);
 
 static constexpr uint8_t kSuperSonicDriverId = 46;
-static constexpr int32_t kSSCharaSelectIndex = 46;  // SS's grid slot from DT_DriverData01
+static constexpr int32_t kSSCharaSelectIndex = 46;
 
- //Original function pointers (saved before swap)
 static FNativeFuncPtr s_origExecIsDriverSelectable = nullptr;
 static FNativeFuncPtr s_origExecGetCSIndex         = nullptr;
 
- //UFunction objects (kept for re-swap on CSS entry)
 static SDK::UFunction* s_ufnIsDriverSelectable = nullptr;
 static SDK::UFunction* s_ufnGetCSIndex         = nullptr;
 
 static bool s_ssHooksInstalled = false;
 static bool s_ssLoggedOnce = false;
 
-// --- Hook: IsDriverSelectable ---
-// After calling original, if driver is Super Sonic, force return true
 void ExecIsDriverSelectableHook(void* Context, void* TheStack, void* Result)
 {
     s_origExecIsDriverSelectable(Context, TheStack, Result);
 
     if (Result) {
         uint8_t* retPtr = static_cast<uint8_t*>(Result);
-        // InDriverId is 1 byte before ReturnValue in the params buffer
         uint8_t driverId = *(retPtr - 1);
 
         if (driverId == kSuperSonicDriverId) {
-            *retPtr = 1; // force true
+            *retPtr = 1;
             if (!s_ssLoggedOnce) {
                 std::cout << "[SS] ExecIsDriverSelectable: driver 46 -> true\n";
             }
@@ -102,15 +240,12 @@ void ExecIsDriverSelectableHook(void* Context, void* TheStack, void* Result)
     }
 }
 
-// --- Hook: GetCharaSelectIndexByDriverId ---
-// After calling original, if driver is Super Sonic and index is -1, force valid index
 void ExecGetCSIndexHook(void* Context, void* TheStack, void* Result)
 {
     s_origExecGetCSIndex(Context, TheStack, Result);
 
     if (Result) {
         int32_t* retPtr = static_cast<int32_t*>(Result);
-        // InDriverId is 4 bytes before ReturnValue in the params buffer
         uint8_t driverId = *(reinterpret_cast<uint8_t*>(Result) - 4);
 
         if (driverId == kSuperSonicDriverId && *retPtr < 0) {
@@ -123,12 +258,10 @@ void ExecGetCSIndexHook(void* Context, void* TheStack, void* Result)
     }
 }
 
-// Install the ExecFunction swaps on both UFunctions
 static void InstallSuperSonicHooks()
 {
     if (s_ssHooksInstalled) return;
 
-    // Find UFunctions
     s_ufnIsDriverSelectable = Reflect::FindFunction("CharaSelectUtilityLibrary", "IsDriverSelectable");
     s_ufnGetCSIndex = Reflect::FindFunction("DriverDataUtilityLibrary", "GetCharaSelectIndexByDriverId");
 
@@ -141,7 +274,6 @@ static void InstallSuperSonicHooks()
         return;
     }
 
-    // Read ExecFunction pointers at UFunction + 0xD8
     FNativeFuncPtr* pExecIDS = reinterpret_cast<FNativeFuncPtr*>(
         reinterpret_cast<uint8_t*>(s_ufnIsDriverSelectable) + 0xD8);
     FNativeFuncPtr* pExecGCS = reinterpret_cast<FNativeFuncPtr*>(
@@ -156,12 +288,10 @@ static void InstallSuperSonicHooks()
               << std::hex << reinterpret_cast<uintptr_t>(s_origExecGetCSIndex) << std::dec << "\n";
 
     if (!s_origExecIsDriverSelectable || !s_origExecGetCSIndex) {
-        std::cout << "[SS] ERROR: ExecFunction is null — function may be Blueprint-only\n";
+        std::cout << "[SS] ERROR: ExecFunction is null\n";
         return;
     }
 
-    // Swap the ExecFunction pointers
-    // UFunction memory is typically read-only, so we may need VirtualProtect
     DWORD oldProtect;
 
     VirtualProtect(pExecIDS, sizeof(FNativeFuncPtr), PAGE_READWRITE, &oldProtect);
@@ -181,6 +311,9 @@ static void InstallSuperSonicHooks()
 // =============================================================================
 void HookGame()
 {
+    // 先加载配置
+    LoadConfig();
+
     bool bHooked = false;
     while (!bHooked) {
         auto World = SDK::UWorld::GetWorld();
@@ -283,30 +416,28 @@ bool RunUnlockPhase(int phase)
     case 9:  { if (cfg.GadgetPlate) { Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "SetCurrentGadgetPlateIdUseId", 7); Reflect::CallStatic("MachineCustomizeUtilityLibrary", "UpdateGadgetSlotNumInUserData"); std::cout << "[Phase 9] Gadget plate\n"; } return true; }
     case 10: { if (cfg.Challenges) { Reflect::CallStatic("CheatChallenge", "AllChallengeClear"); Reflect::CallStaticBool("AppSaveGameHelper", "SetCompleteMainChallenge", true); Reflect::CallStaticBool("AppSaveGameHelper", "SetCompleteSpecialChallenge", true); int32_t pc = Reflect::CallStaticRetInt32("ChallengeStatsUtility", "GetChallengeProgressCount"); Reflect::CallStaticInt32("AppSaveGameHelper", "SetChallengeShowProgress", pc); Reflect::CallStaticFloat("AppSaveGameHelper", "SetChallengeLastShowProgress", 1.0f); std::cout << "[Phase 10] Challenges\n"; } return true; }
 
-    // Phase 11: Super Sonic — save-data + ExecFunction hooks
-//    case 11: {
-//        if (cfg.SuperSonicAll) {
-//            Reflect::CallStaticUInt8("AppSaveGameHelper", "SetDriverSelectable", kSuperSonicDriverId);
-//            Reflect::CallStaticUInt8("AppSaveGameHelper", "ClearDriverNew", kSuperSonicDriverId);
-//            Reflect::CallStaticBool("AppSaveGameHelper", "SetOpenSuperSonicSpeed", true);
-//            std::cout << "[Phase 11] Super Sonic save-data set\n";
-//        }
-//        return true; }
-//
-//    case 12: { if (cfg.NF_CompleteMachine) Reflect::CallStatic("MachineCustomizeUtilityLibrary", "DisableCompleteMachineNewFlags"); if (cfg.NF_Sticker) Reflect::CallStatic("MachineCustomizeUtilityLibrary", "DisableStickerNewFlags"); if (cfg.NF_ColorPreset) Reflect::CallStatic("MachineCustomizeUtilityLibrary", "DisableMachineColorPresetNewFlags"); if (cfg.NF_Gadget) Reflect::CallStatic("MachineCustomizeUtilityLibrary", "DisableDisplayedGadgetNewFlags"); std::cout << "[Phase 12] Machine NF\n"; return true; }
-//    case 13: { if (cfg.NF_PartsSpeed)  Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "DisablePartsListNewFlagByType", 0); return true; }
-//    case 14: { if (cfg.NF_PartsAccel)  Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "DisablePartsListNewFlagByType", 1); return true; }
-//    case 15: { if (cfg.NF_PartsHandle) Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "DisablePartsListNewFlagByType", 2); return true; }
-//    case 16: { if (cfg.NF_PartsPower)  Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "DisablePartsListNewFlagByType", 3); return true; }
-//    case 17: { if (cfg.NF_PartsDash)   Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "DisablePartsListNewFlagByType", 4); return true; }
-//    case 18: { if (cfg.NF_Horn) { int n = Reflect::GetEnumNum("EMachineHornType"); for (int i = 0; i < n; i++) Reflect::CallStaticUInt8Bool("MachineCustomizeUtilityLibrary", "SetCustomMachineHornNew", (uint8_t)i, false); } return true; }
-//    case 19: { if (cfg.NF_HonorTitles) { for (int i = 0; i < 500; i++) Reflect::CallStaticInt32("AppSaveGameHelper", "ResetNewHonorTitle", i); } return true; }
-//    case 20: { return true; }
-//    case 21: { if (cfg.NF_Challenges) { int32_t pc = Reflect::CallStaticRetInt32("ChallengeStatsUtility", "GetChallengeProgressCount"); Reflect::CallStaticInt32("AppSaveGameHelper", "SetChallengeShowProgress", pc); Reflect::CallStaticFloat("AppSaveGameHelper", "SetChallengeLastShowProgress", 1.0f); } if (cfg.NF_Rewards) Reflect::CallStatic("AppSaveGameHelper", "ClearRewardGetDisplayRequestDataAll"); return true; }
-//    case 22: { if (cfg.Achievements) { UnlockSteamAchievements(); std::cout << "[Phase 22] Achievements\n"; } return true; }
-//    default: return false;
-  }
-// 
+    case 11: {
+        if (cfg.SuperSonicAll) {
+            Reflect::CallStaticUInt8("AppSaveGameHelper", "SetDriverSelectable", kSuperSonicDriverId);
+            Reflect::CallStaticUInt8("AppSaveGameHelper", "ClearDriverNew", kSuperSonicDriverId);
+            Reflect::CallStaticBool("AppSaveGameHelper", "SetOpenSuperSonicSpeed", true);
+            std::cout << "[Phase 11] Super Sonic save-data set\n";
+        }
+        return true; }
+
+    case 12: { if (cfg.NF_CompleteMachine) Reflect::CallStatic("MachineCustomizeUtilityLibrary", "DisableCompleteMachineNewFlags"); if (cfg.NF_Sticker) Reflect::CallStatic("MachineCustomizeUtilityLibrary", "DisableStickerNewFlags"); if (cfg.NF_ColorPreset) Reflect::CallStatic("MachineCustomizeUtilityLibrary", "DisableMachineColorPresetNewFlags"); if (cfg.NF_Gadget) Reflect::CallStatic("MachineCustomizeUtilityLibrary", "DisableDisplayedGadgetNewFlags"); std::cout << "[Phase 12] Machine NF\n"; return true; }
+    case 13: { if (cfg.NF_PartsSpeed)  Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "DisablePartsListNewFlagByType", 0); return true; }
+    case 14: { if (cfg.NF_PartsAccel)  Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "DisablePartsListNewFlagByType", 1); return true; }
+    case 15: { if (cfg.NF_PartsHandle) Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "DisablePartsListNewFlagByType", 2); return true; }
+    case 16: { if (cfg.NF_PartsPower)  Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "DisablePartsListNewFlagByType", 3); return true; }
+    case 17: { if (cfg.NF_PartsDash)   Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "DisablePartsListNewFlagByType", 4); return true; }
+    case 18: { if (cfg.NF_Horn) { int n = Reflect::GetEnumNum("EMachineHornType"); for (int i = 0; i < n; i++) Reflect::CallStaticUInt8Bool("MachineCustomizeUtilityLibrary", "SetCustomMachineHornNew", (uint8_t)i, false); } return true; }
+    case 19: { if (cfg.NF_HonorTitles) { for (int i = 0; i < 500; i++) Reflect::CallStaticInt32("AppSaveGameHelper", "ResetNewHonorTitle", i); } return true; }
+    case 20: { if (cfg.NF_Jukebox) { /* 如果有对应的函数可以在这里添加 */ } return true; }
+    case 21: { if (cfg.NF_Challenges) { int32_t pc = Reflect::CallStaticRetInt32("ChallengeStatsUtility", "GetChallengeProgressCount"); Reflect::CallStaticInt32("AppSaveGameHelper", "SetChallengeShowProgress", pc); Reflect::CallStaticFloat("AppSaveGameHelper", "SetChallengeLastShowProgress", 1.0f); } if (cfg.NF_Rewards) Reflect::CallStatic("AppSaveGameHelper", "ClearRewardGetDisplayRequestDataAll"); return true; }
+    case 22: { if (cfg.Achievements) { UnlockSteamAchievements(); std::cout << "[Phase 22] Achievements\n"; } return true; }
+    default: return false;
+    }
 }
 
 // =============================================================================
@@ -314,10 +445,10 @@ bool RunUnlockPhase(int phase)
 // =============================================================================
 void __fastcall hk_AActor_ProcessEvent(SDK::AActor* Class, SDK::UFunction* Function, void* Parms)
 {
-    // ===== EARLIEST: Install SS ExecFunction hooks on first call =====
-    //if (!s_ssHooksInstalled && cfg.SuperSonicAll) {
-    //    InstallSuperSonicHooks();
-    //}
+    // 安装 Super Sonic ExecFunction hooks
+    if (!s_ssHooksInstalled && cfg.SuperSonicAll) {
+        InstallSuperSonicHooks();
+    }
 
     // ===== PRE-CALL =====
     if (!bCleared)
