@@ -32,7 +32,6 @@ struct SRCWConfig
     bool GadgetPlate      = true;
     bool Challenges       = true;
     bool Achievements     = false;
-//    bool SuperSonicAll    = false;
 
     bool StagesDLC        = true;
     bool StagesGPOpen     = true;
