@@ -1,172 +1,4 @@
 #include "Features.h"
-#include <Windows.h>
-#include <iostream>
-#include <string>
-
-// =============================================================================
-// 配置结构体定义
-// =============================================================================
-struct Config {
-    // General
-    bool Console = false;
-    bool ClearOnly = false;
-    int PhaseDelayMs = 500;
-
-    // Trigger
-    bool HotkeyEnabled = false;
-    int UnlockKey = 192;
-
-    // DLC Gate Removal
-    bool ClearCharaDLC = true;
-    bool ClearMachineDLC = true;
-    bool ClearHonorDLC = true;
-    bool ClearAlbumDLC = true;
-    bool ClearStickerDLC = true;
-
-    // Save Data Unlocks
-    bool HonorTitles = true;
-    bool Drivers = true;
-    bool MachineCustomize = true;
-    bool ColorPresets = true;
-    bool MirrorSpeed = true;
-    bool Music = true;
-    bool GadgetPlate = true;
-    bool Challenges = true;
-
-    // Optional
-    bool Achievements = false;
-    bool SuperSonicAll = true;
-
-    // Stage Unlocks
-    bool StagesDLC = true;
-    bool StagesGPOpen = true;
-    bool StagesSecret = true;
-
-    // New Flag Clearing
-    bool NF_CompleteMachine = true;
-    bool NF_Sticker = true;
-    bool NF_ColorPreset = true;
-    bool NF_Gadget = true;
-    bool NF_PartsSpeed = true;
-    bool NF_PartsAccel = true;
-    bool NF_PartsHandle = true;
-    bool NF_PartsPower = true;
-    bool NF_PartsDash = true;
-    bool NF_Horn = true;
-    bool NF_HonorTitles = true;
-    bool NF_Jukebox = true;
-    bool NF_Challenges = true;
-    bool NF_Rewards = true;
-};
-
-// 全局配置实例
-Config cfg;
-
-// =============================================================================
-// INI 读取辅助函数
-// =============================================================================
-static int ReadIniInt(const char* section, const char* key, int defaultValue, const char* filename)
-{
-    return GetPrivateProfileIntA(section, key, defaultValue, filename);
-}
-
-static bool ReadIniBool(const char* section, const char* key, bool defaultValue, const char* filename)
-{
-    return GetPrivateProfileIntA(section, key, defaultValue ? 1 : 0, filename) != 0;
-}
-
-// =============================================================================
-// 加载配置文件
-// =============================================================================
-void LoadConfig()
-{
-    const char* iniPath = "SRCW.ini";
-
-    // 检查文件是否存在，如果不存在则创建默认配置
-    DWORD attribs = GetFileAttributesA(iniPath);
-    if (attribs == INVALID_FILE_ATTRIBUTES) {
-        // 创建默认 INI 文件
-        FILE* f = nullptr;
-        fopen_s(&f, iniPath, "w");
-        if (f) {
-            fprintf(f, "; SRCW Unlocker Config (Reflection Build)\n");
-            fprintf(f, "; 1=enable, 0=disable\n\n");
-            fprintf(f, "[General]\nConsole=0\nClearOnly=0\nPhaseDelayMs=500\n\n");
-            fprintf(f, "[Trigger]\nHotkeyEnabled=0\nUnlockKey=192\n\n");
-            fprintf(f, "[DLC]\nClearCharaDLC=1\nClearMachineDLC=1\nClearHonorDLC=1\n");
-            fprintf(f, "ClearAlbumDLC=1\nClearStickerDLC=1\n\n");
-            fprintf(f, "[Unlocks]\nHonorTitles=1\nDrivers=1\nMachineCustomize=1\n");
-            fprintf(f, "ColorPresets=1\nMirrorSpeed=1\nMusic=1\nGadgetPlate=1\nChallenges=1\n\n");
-            fprintf(f, "[Optional]\nAchievements=0\nSuperSonicAll=1\n\n");
-            fprintf(f, "[Stages]\nStagesDLC=1\nStagesGPOpen=1\nStagesSecret=1\n\n");
-            fprintf(f, "[NewFlags]\nNF_CompleteMachine=1\nNF_Sticker=1\nNF_ColorPreset=1\n");
-            fprintf(f, "NF_Gadget=1\nNF_PartsSpeed=1\nNF_PartsAccel=1\nNF_PartsHandle=1\n");
-            fprintf(f, "NF_PartsPower=1\nNF_PartsDash=1\nNF_Horn=1\nNF_HonorTitles=1\n");
-            fprintf(f, "NF_Jukebox=1\nNF_Challenges=1\nNF_Rewards=1\n");
-            fclose(f);
-        }
-    }
-
-    // 读取配置（使用空section，因为原INI没有section头）
-    // 注意：原INI没有 [Section] 头，GetPrivateProfileInt 可以用 NULL 作为 section
-
-    // General
-    cfg.Console = ReadIniBool(nullptr, "Console", false, iniPath);
-    cfg.ClearOnly = ReadIniBool(nullptr, "ClearOnly", false, iniPath);
-    cfg.PhaseDelayMs = ReadIniInt(nullptr, "PhaseDelayMs", 500, iniPath);
-
-    // Trigger
-    cfg.HotkeyEnabled = ReadIniBool(nullptr, "HotkeyEnabled", false, iniPath);
-    cfg.UnlockKey = ReadIniInt(nullptr, "UnlockKey", 192, iniPath);
-
-    // DLC Gate Removal
-    cfg.ClearCharaDLC = ReadIniBool(nullptr, "ClearCharaDLC", true, iniPath);
-    cfg.ClearMachineDLC = ReadIniBool(nullptr, "ClearMachineDLC", true, iniPath);
-    cfg.ClearHonorDLC = ReadIniBool(nullptr, "ClearHonorDLC", true, iniPath);
-    cfg.ClearAlbumDLC = ReadIniBool(nullptr, "ClearAlbumDLC", true, iniPath);
-    cfg.ClearStickerDLC = ReadIniBool(nullptr, "ClearStickerDLC", true, iniPath);
-
-    // Save Data Unlocks
-    cfg.HonorTitles = ReadIniBool(nullptr, "HonorTitles", true, iniPath);
-    cfg.Drivers = ReadIniBool(nullptr, "Drivers", true, iniPath);
-    cfg.MachineCustomize = ReadIniBool(nullptr, "MachineCustomize", true, iniPath);
-    cfg.ColorPresets = ReadIniBool(nullptr, "ColorPresets", true, iniPath);
-    cfg.MirrorSpeed = ReadIniBool(nullptr, "MirrorSpeed", true, iniPath);
-    cfg.Music = ReadIniBool(nullptr, "Music", true, iniPath);
-    cfg.GadgetPlate = ReadIniBool(nullptr, "GadgetPlate", true, iniPath);
-    cfg.Challenges = ReadIniBool(nullptr, "Challenges", true, iniPath);
-
-    // Optional
-    cfg.Achievements = ReadIniBool(nullptr, "Achievements", false, iniPath);
-    cfg.SuperSonicAll = ReadIniBool(nullptr, "SuperSonicAll", true, iniPath);
-
-    // Stage Unlocks
-    cfg.StagesDLC = ReadIniBool(nullptr, "StagesDLC", true, iniPath);
-    cfg.StagesGPOpen = ReadIniBool(nullptr, "StagesGPOpen", true, iniPath);
-    cfg.StagesSecret = ReadIniBool(nullptr, "StagesSecret", true, iniPath);
-
-    // New Flag Clearing
-    cfg.NF_CompleteMachine = ReadIniBool(nullptr, "NF_CompleteMachine", true, iniPath);
-    cfg.NF_Sticker = ReadIniBool(nullptr, "NF_Sticker", true, iniPath);
-    cfg.NF_ColorPreset = ReadIniBool(nullptr, "NF_ColorPreset", true, iniPath);
-    cfg.NF_Gadget = ReadIniBool(nullptr, "NF_Gadget", true, iniPath);
-    cfg.NF_PartsSpeed = ReadIniBool(nullptr, "NF_PartsSpeed", true, iniPath);
-    cfg.NF_PartsAccel = ReadIniBool(nullptr, "NF_PartsAccel", true, iniPath);
-    cfg.NF_PartsHandle = ReadIniBool(nullptr, "NF_PartsHandle", true, iniPath);
-    cfg.NF_PartsPower = ReadIniBool(nullptr, "NF_PartsPower", true, iniPath);
-    cfg.NF_PartsDash = ReadIniBool(nullptr, "NF_PartsDash", true, iniPath);
-    cfg.NF_Horn = ReadIniBool(nullptr, "NF_Horn", true, iniPath);
-    cfg.NF_HonorTitles = ReadIniBool(nullptr, "NF_HonorTitles", true, iniPath);
-    cfg.NF_Jukebox = ReadIniBool(nullptr, "NF_Jukebox", true, iniPath);
-    cfg.NF_Challenges = ReadIniBool(nullptr, "NF_Challenges", true, iniPath);
-    cfg.NF_Rewards = ReadIniBool(nullptr, "NF_Rewards", true, iniPath);
-
-    // 打印配置摘要
-    std::cout << "[SRCW] Config loaded from SRCW.ini\n";
-    std::cout << "[SRCW] HotkeyEnabled=" << cfg.HotkeyEnabled 
-              << " UnlockKey=" << cfg.UnlockKey 
-              << " PhaseDelay=" << cfg.PhaseDelayMs << "ms\n";
-}
 
 // =============================================================================
 // Steam Achievement Unlocking
@@ -226,16 +58,12 @@ static bool s_ssLoggedOnce = false;
 void ExecIsDriverSelectableHook(void* Context, void* TheStack, void* Result)
 {
     s_origExecIsDriverSelectable(Context, TheStack, Result);
-
     if (Result) {
         uint8_t* retPtr = static_cast<uint8_t*>(Result);
         uint8_t driverId = *(retPtr - 1);
-
         if (driverId == kSuperSonicDriverId) {
             *retPtr = 1;
-            if (!s_ssLoggedOnce) {
-                std::cout << "[SS] ExecIsDriverSelectable: driver 46 -> true\n";
-            }
+            if (!s_ssLoggedOnce) std::cout << "[SS] ExecIsDriverSelectable: driver 46 -> true\n";
         }
     }
 }
@@ -243,11 +71,9 @@ void ExecIsDriverSelectableHook(void* Context, void* TheStack, void* Result)
 void ExecGetCSIndexHook(void* Context, void* TheStack, void* Result)
 {
     s_origExecGetCSIndex(Context, TheStack, Result);
-
     if (Result) {
         int32_t* retPtr = static_cast<int32_t*>(Result);
         uint8_t driverId = *(reinterpret_cast<uint8_t*>(Result) - 4);
-
         if (driverId == kSuperSonicDriverId && *retPtr < 0) {
             *retPtr = kSSCharaSelectIndex;
             if (!s_ssLoggedOnce) {
@@ -261,49 +87,154 @@ void ExecGetCSIndexHook(void* Context, void* TheStack, void* Result)
 static void InstallSuperSonicHooks()
 {
     if (s_ssHooksInstalled) return;
-
     s_ufnIsDriverSelectable = Reflect::FindFunction("CharaSelectUtilityLibrary", "IsDriverSelectable");
     s_ufnGetCSIndex = Reflect::FindFunction("DriverDataUtilityLibrary", "GetCharaSelectIndexByDriverId");
+    if (!s_ufnIsDriverSelectable) { std::cout << "[SS] ERROR: IsDriverSelectable not found\n"; return; }
+    if (!s_ufnGetCSIndex) { std::cout << "[SS] ERROR: GetCharaSelectIndexByDriverId not found\n"; return; }
 
-    if (!s_ufnIsDriverSelectable) {
-        std::cout << "[SS] ERROR: IsDriverSelectable UFunction not found\n";
-        return;
-    }
-    if (!s_ufnGetCSIndex) {
-        std::cout << "[SS] ERROR: GetCharaSelectIndexByDriverId UFunction not found\n";
-        return;
-    }
-
-    FNativeFuncPtr* pExecIDS = reinterpret_cast<FNativeFuncPtr*>(
-        reinterpret_cast<uint8_t*>(s_ufnIsDriverSelectable) + 0xD8);
-    FNativeFuncPtr* pExecGCS = reinterpret_cast<FNativeFuncPtr*>(
-        reinterpret_cast<uint8_t*>(s_ufnGetCSIndex) + 0xD8);
-
+    FNativeFuncPtr* pExecIDS = reinterpret_cast<FNativeFuncPtr*>(reinterpret_cast<uint8_t*>(s_ufnIsDriverSelectable) + 0xD8);
+    FNativeFuncPtr* pExecGCS = reinterpret_cast<FNativeFuncPtr*>(reinterpret_cast<uint8_t*>(s_ufnGetCSIndex) + 0xD8);
     s_origExecIsDriverSelectable = *pExecIDS;
     s_origExecGetCSIndex = *pExecGCS;
 
-    std::cout << "[SS] IsDriverSelectable ExecFunc @ 0x"
-              << std::hex << reinterpret_cast<uintptr_t>(s_origExecIsDriverSelectable) << std::dec << "\n";
-    std::cout << "[SS] GetCSIndex ExecFunc @ 0x"
-              << std::hex << reinterpret_cast<uintptr_t>(s_origExecGetCSIndex) << std::dec << "\n";
+    std::cout << "[SS] IsDriverSelectable ExecFunc @ 0x" << std::hex << reinterpret_cast<uintptr_t>(s_origExecIsDriverSelectable) << std::dec << "\n";
+    std::cout << "[SS] GetCSIndex ExecFunc @ 0x" << std::hex << reinterpret_cast<uintptr_t>(s_origExecGetCSIndex) << std::dec << "\n";
 
     if (!s_origExecIsDriverSelectable || !s_origExecGetCSIndex) {
-        std::cout << "[SS] ERROR: ExecFunction is null\n";
-        return;
+        std::cout << "[SS] ERROR: ExecFunction is null\n"; return;
     }
 
     DWORD oldProtect;
-
     VirtualProtect(pExecIDS, sizeof(FNativeFuncPtr), PAGE_READWRITE, &oldProtect);
     *pExecIDS = &ExecIsDriverSelectableHook;
     VirtualProtect(pExecIDS, sizeof(FNativeFuncPtr), oldProtect, &oldProtect);
-
     VirtualProtect(pExecGCS, sizeof(FNativeFuncPtr), PAGE_READWRITE, &oldProtect);
     *pExecGCS = &ExecGetCSIndexHook;
     VirtualProtect(pExecGCS, sizeof(FNativeFuncPtr), oldProtect, &oldProtect);
-
     s_ssHooksInstalled = true;
     std::cout << "[SS] ExecFunction swaps installed!\n";
+}
+
+// =============================================================================
+// INI Config Loading
+// =============================================================================
+static int ReadIniInt(const char* section, const char* key, int defaultValue, const char* filename)
+{
+    return GetPrivateProfileIntA(section, key, defaultValue, filename);
+}
+
+static bool ReadIniBool(const char* section, const char* key, bool defaultValue, const char* filename)
+{
+    return GetPrivateProfileIntA(section, key, defaultValue ? 1 : 0, filename) != 0;
+}
+
+void LoadConfig()
+{
+    const char* iniPath = ConfigFileName;
+
+    // Check if file exists, create default if not
+    DWORD attribs = GetFileAttributesA(iniPath);
+    if (attribs == INVALID_FILE_ATTRIBUTES) {
+        WriteDefaultConfig();
+    }
+
+    // Read all config values from INI
+    cfg.Console          = ReadIniBool(nullptr, "Console", false, iniPath);
+    cfg.ClearOnly        = ReadIniBool(nullptr, "ClearOnly", false, iniPath);
+    cfg.PhaseDelayMs     = ReadIniInt(nullptr, "PhaseDelayMs", 750, iniPath);
+    cfg.HotkeyEnabled    = ReadIniBool(nullptr, "HotkeyEnabled", false, iniPath);
+    cfg.UnlockKey        = ReadIniInt(nullptr, "UnlockKey", 0xC0, iniPath);
+
+    cfg.ClearCharaDLC    = ReadIniBool(nullptr, "ClearCharaDLC", true, iniPath);
+    cfg.ClearMachineDLC  = ReadIniBool(nullptr, "ClearMachineDLC", true, iniPath);
+    cfg.ClearHonorDLC    = ReadIniBool(nullptr, "ClearHonorDLC", true, iniPath);
+    cfg.ClearAlbumDLC    = ReadIniBool(nullptr, "ClearAlbumDLC", true, iniPath);
+    cfg.ClearStickerDLC  = ReadIniBool(nullptr, "ClearStickerDLC", true, iniPath);
+
+    cfg.HonorTitles      = ReadIniBool(nullptr, "HonorTitles", true, iniPath);
+    cfg.Drivers          = ReadIniBool(nullptr, "Drivers", true, iniPath);
+    cfg.MachineCustomize = ReadIniBool(nullptr, "MachineCustomize", true, iniPath);
+    cfg.ColorPresets     = ReadIniBool(nullptr, "ColorPresets", true, iniPath);
+    cfg.MirrorSpeed      = ReadIniBool(nullptr, "MirrorSpeed", true, iniPath);
+    cfg.Music            = ReadIniBool(nullptr, "Music", true, iniPath);
+    cfg.GadgetPlate      = ReadIniBool(nullptr, "GadgetPlate", true, iniPath);
+    cfg.Challenges       = ReadIniBool(nullptr, "Challenges", true, iniPath);
+    cfg.Achievements     = ReadIniBool(nullptr, "Achievements", false, iniPath);
+
+    cfg.StagesDLC        = ReadIniBool(nullptr, "StagesDLC", true, iniPath);
+    cfg.StagesGPOpen     = ReadIniBool(nullptr, "StagesGPOpen", true, iniPath);
+    cfg.StagesSecret     = ReadIniBool(nullptr, "StagesSecret", true, iniPath);
+
+    cfg.NF_CompleteMachine = ReadIniBool(nullptr, "NF_CompleteMachine", true, iniPath);
+    cfg.NF_Sticker       = ReadIniBool(nullptr, "NF_Sticker", true, iniPath);
+    cfg.NF_ColorPreset   = ReadIniBool(nullptr, "NF_ColorPreset", true, iniPath);
+    cfg.NF_Gadget        = ReadIniBool(nullptr, "NF_Gadget", true, iniPath);
+    cfg.NF_PartsSpeed    = ReadIniBool(nullptr, "NF_PartsSpeed", true, iniPath);
+    cfg.NF_PartsAccel    = ReadIniBool(nullptr, "NF_PartsAccel", true, iniPath);
+    cfg.NF_PartsHandle   = ReadIniBool(nullptr, "NF_PartsHandle", true, iniPath);
+    cfg.NF_PartsPower    = ReadIniBool(nullptr, "NF_PartsPower", true, iniPath);
+    cfg.NF_PartsDash     = ReadIniBool(nullptr, "NF_PartsDash", true, iniPath);
+    cfg.NF_Horn          = ReadIniBool(nullptr, "NF_Horn", true, iniPath);
+    cfg.NF_HonorTitles   = ReadIniBool(nullptr, "NF_HonorTitles", true, iniPath);
+    cfg.NF_Jukebox       = ReadIniBool(nullptr, "NF_Jukebox", true, iniPath);
+    cfg.NF_Challenges    = ReadIniBool(nullptr, "NF_Challenges", true, iniPath);
+    cfg.NF_Rewards       = ReadIniBool(nullptr, "NF_Rewards", true, iniPath);
+
+    std::cout << "[SRCW] Config loaded from " << iniPath << "\n";
+    std::cout << "[SRCW] PhaseDelay=" << cfg.PhaseDelayMs << "ms\n";
+}
+
+void WriteDefaultConfig()
+{
+    FILE* f = nullptr;
+    fopen_s(&f, ConfigFileName, "w");
+    if (!f) return;
+
+    fprintf(f, "; SRCW Unlocker Config\n");
+    fprintf(f, "; 1=enable, 0=disable\n\n");
+    fprintf(f, "Console 0\n");
+    fprintf(f, "ClearOnly 0\n");
+    fprintf(f, "PhaseDelayMs 750\n\n");
+    fprintf(f, "; Trigger: 0=autorun on menu load, 1=wait for hotkey\n");
+    fprintf(f, "HotkeyEnabled 0\n");
+    fprintf(f, "UnlockKey 192\n\n");
+    fprintf(f, "; --- DLC Gate Removal ---\n");
+    fprintf(f, "ClearCharaDLC 1\n");
+    fprintf(f, "ClearMachineDLC 1\n");
+    fprintf(f, "ClearHonorDLC 1\n");
+    fprintf(f, "ClearAlbumDLC 1\n");
+    fprintf(f, "ClearStickerDLC 1\n\n");
+    fprintf(f, "; --- Save Data Unlocks ---\n");
+    fprintf(f, "HonorTitles 1\n");
+    fprintf(f, "Drivers 1\n");
+    fprintf(f, "MachineCustomize 1\n");
+    fprintf(f, "ColorPresets 1\n");
+    fprintf(f, "MirrorSpeed 1\n");
+    fprintf(f, "Music 1\n");
+    fprintf(f, "GadgetPlate 1\n");
+    fprintf(f, "Challenges 1\n\n");
+    fprintf(f, "; WARNING: Achievements permanently unlock on Steam\n");
+    fprintf(f, "Achievements 0\n\n");
+    fprintf(f, "; --- Stage Unlocks ---\n");
+    fprintf(f, "StagesDLC 1\n");
+    fprintf(f, "StagesGPOpen 1\n");
+    fprintf(f, "StagesSecret 1\n\n");
+    fprintf(f, "; --- New Flag Clearing ---\n");
+    fprintf(f, "NF_CompleteMachine 1\n");
+    fprintf(f, "NF_Sticker 1\n");
+    fprintf(f, "NF_ColorPreset 1\n");
+    fprintf(f, "NF_Gadget 1\n");
+    fprintf(f, "NF_PartsSpeed 1\n");
+    fprintf(f, "NF_PartsAccel 1\n");
+    fprintf(f, "NF_PartsHandle 1\n");
+    fprintf(f, "NF_PartsPower 1\n");
+    fprintf(f, "NF_PartsDash 1\n");
+    fprintf(f, "NF_Horn 1\n");
+    fprintf(f, "NF_HonorTitles 1\n");
+    fprintf(f, "NF_Jukebox 1\n");
+    fprintf(f, "NF_Challenges 1\n");
+    fprintf(f, "NF_Rewards 1\n");
+    fclose(f);
 }
 
 // =============================================================================
@@ -311,7 +242,6 @@ static void InstallSuperSonicHooks()
 // =============================================================================
 void HookGame()
 {
-    // 先加载配置
     LoadConfig();
 
     bool bHooked = false;
@@ -417,7 +347,10 @@ bool RunUnlockPhase(int phase)
     case 10: { if (cfg.Challenges) { Reflect::CallStatic("CheatChallenge", "AllChallengeClear"); Reflect::CallStaticBool("AppSaveGameHelper", "SetCompleteMainChallenge", true); Reflect::CallStaticBool("AppSaveGameHelper", "SetCompleteSpecialChallenge", true); int32_t pc = Reflect::CallStaticRetInt32("ChallengeStatsUtility", "GetChallengeProgressCount"); Reflect::CallStaticInt32("AppSaveGameHelper", "SetChallengeShowProgress", pc); Reflect::CallStaticFloat("AppSaveGameHelper", "SetChallengeLastShowProgress", 1.0f); std::cout << "[Phase 10] Challenges\n"; } return true; }
 
     case 11: {
-        if (cfg.SuperSonicAll) {
+        // Super Sonic save-data unlock (always enabled if MirrorSpeed is on, or can be controlled separately)
+        // Since SuperSonicAll was removed from config, we use MirrorSpeed as the trigger
+        // or you can add a separate config option back if needed
+        if (cfg.MirrorSpeed) {
             Reflect::CallStaticUInt8("AppSaveGameHelper", "SetDriverSelectable", kSuperSonicDriverId);
             Reflect::CallStaticUInt8("AppSaveGameHelper", "ClearDriverNew", kSuperSonicDriverId);
             Reflect::CallStaticBool("AppSaveGameHelper", "SetOpenSuperSonicSpeed", true);
@@ -433,7 +366,7 @@ bool RunUnlockPhase(int phase)
     case 17: { if (cfg.NF_PartsDash)   Reflect::CallStaticUInt8("MachineCustomizeUtilityLibrary", "DisablePartsListNewFlagByType", 4); return true; }
     case 18: { if (cfg.NF_Horn) { int n = Reflect::GetEnumNum("EMachineHornType"); for (int i = 0; i < n; i++) Reflect::CallStaticUInt8Bool("MachineCustomizeUtilityLibrary", "SetCustomMachineHornNew", (uint8_t)i, false); } return true; }
     case 19: { if (cfg.NF_HonorTitles) { for (int i = 0; i < 500; i++) Reflect::CallStaticInt32("AppSaveGameHelper", "ResetNewHonorTitle", i); } return true; }
-    case 20: { if (cfg.NF_Jukebox) { /* 如果有对应的函数可以在这里添加 */ } return true; }
+    case 20: { if (cfg.NF_Jukebox) { /* Add jukebox NF logic if available */ } return true; }
     case 21: { if (cfg.NF_Challenges) { int32_t pc = Reflect::CallStaticRetInt32("ChallengeStatsUtility", "GetChallengeProgressCount"); Reflect::CallStaticInt32("AppSaveGameHelper", "SetChallengeShowProgress", pc); Reflect::CallStaticFloat("AppSaveGameHelper", "SetChallengeLastShowProgress", 1.0f); } if (cfg.NF_Rewards) Reflect::CallStatic("AppSaveGameHelper", "ClearRewardGetDisplayRequestDataAll"); return true; }
     case 22: { if (cfg.Achievements) { UnlockSteamAchievements(); std::cout << "[Phase 22] Achievements\n"; } return true; }
     default: return false;
@@ -445,25 +378,38 @@ bool RunUnlockPhase(int phase)
 // =============================================================================
 void __fastcall hk_AActor_ProcessEvent(SDK::AActor* Class, SDK::UFunction* Function, void* Parms)
 {
-    // 安装 Super Sonic ExecFunction hooks
-    if (!s_ssHooksInstalled && cfg.SuperSonicAll) {
+    // Install Super Sonic ExecFunction hooks on first call
+    if (!s_ssHooksInstalled) {
         InstallSuperSonicHooks();
     }
 
-    // ===== PRE-CALL =====
+    // DLC Clear
     if (!bCleared)
         Clear();
 
-    // AutoRun
+    // AutoRun (default behavior - no hotkey needed)
     if (!cfg.HotkeyEnabled && !bUnlockStarted && !bUnlockDone) {
-        if (!bAutoRunReady) { if (!Function->GetName().compare("OnInitStateSelectPlayMode")) bAutoRunReady = true; }
-        else { bUnlockStarted = true; unlockPhase = 0; lastPhaseTime = GetTickCount64(); std::cout << "[SRCW] AutoRun starting...\n"; }
+        if (!bAutoRunReady) { 
+            if (!Function->GetName().compare("OnInitStateSelectPlayMode")) 
+                bAutoRunReady = true; 
+        }
+        else { 
+            bUnlockStarted = true; 
+            unlockPhase = 0; 
+            lastPhaseTime = GetTickCount64(); 
+            std::cout << "[SRCW] AutoRun starting...\n"; 
+        }
     }
 
-    // Hotkey
+    // Hotkey mode
     if (cfg.HotkeyEnabled && !bUnlockStarted && !bUnlockDone) {
         bool kd = (GetAsyncKeyState(cfg.UnlockKey) & 0x8000) != 0;
-        if (kd && !bKeyWasDown) { bUnlockStarted = true; unlockPhase = 0; lastPhaseTime = GetTickCount64(); std::cout << "[SRCW] Hotkey pressed...\n"; }
+        if (kd && !bKeyWasDown) { 
+            bUnlockStarted = true; 
+            unlockPhase = 0; 
+            lastPhaseTime = GetTickCount64(); 
+            std::cout << "[SRCW] Hotkey pressed...\n"; 
+        }
         bKeyWasDown = kd;
     }
 
@@ -471,8 +417,14 @@ void __fastcall hk_AActor_ProcessEvent(SDK::AActor* Class, SDK::UFunction* Funct
     if (bUnlockStarted && !bUnlockDone) {
         ULONGLONG now = GetTickCount64();
         if (now - lastPhaseTime >= (ULONGLONG)cfg.PhaseDelayMs) {
-            if (RunUnlockPhase(unlockPhase)) { unlockPhase++; lastPhaseTime = now; }
-            else { bUnlockDone = true; std::cout << "All phases complete!\n"; }
+            if (RunUnlockPhase(unlockPhase)) { 
+                unlockPhase++; 
+                lastPhaseTime = now; 
+            }
+            else { 
+                bUnlockDone = true; 
+                std::cout << "All phases complete!\n"; 
+            }
         }
     }
 
