@@ -116,133 +116,12 @@ static void InstallSuperSonicHooks()
 }
 
 // =============================================================================
-// INI Config Loading
-// =============================================================================
-static int ReadIniInt(const char* section, const char* key, int defaultValue, const char* filename)
-{
-    return GetPrivateProfileIntA(section, key, defaultValue, filename);
-}
-
-static bool ReadIniBool(const char* section, const char* key, bool defaultValue, const char* filename)
-{
-    return GetPrivateProfileIntA(section, key, defaultValue ? 1 : 0, filename) != 0;
-}
-
-void LoadConfig()
-{
-    const char* iniPath = ConfigFileName;
-
-    // Check if file exists, create default if not
-    DWORD attribs = GetFileAttributesA(iniPath);
-    if (attribs == INVALID_FILE_ATTRIBUTES) {
-        WriteDefaultConfig();
-    }
-
-    // Read all config values from INI
-    cfg.Console          = ReadIniBool(nullptr, "Console", false, iniPath);
-    cfg.ClearOnly        = ReadIniBool(nullptr, "ClearOnly", false, iniPath);
-    cfg.PhaseDelayMs     = ReadIniInt(nullptr, "PhaseDelayMs", 750, iniPath);
-    cfg.HotkeyEnabled    = ReadIniBool(nullptr, "HotkeyEnabled", false, iniPath);
-    cfg.UnlockKey        = ReadIniInt(nullptr, "UnlockKey", 0xC0, iniPath);
-
-    cfg.ClearCharaDLC    = ReadIniBool(nullptr, "ClearCharaDLC", true, iniPath);
-    cfg.ClearMachineDLC  = ReadIniBool(nullptr, "ClearMachineDLC", true, iniPath);
-    cfg.ClearHonorDLC    = ReadIniBool(nullptr, "ClearHonorDLC", true, iniPath);
-    cfg.ClearAlbumDLC    = ReadIniBool(nullptr, "ClearAlbumDLC", true, iniPath);
-    cfg.ClearStickerDLC  = ReadIniBool(nullptr, "ClearStickerDLC", true, iniPath);
-
-    cfg.HonorTitles      = ReadIniBool(nullptr, "HonorTitles", true, iniPath);
-    cfg.Drivers          = ReadIniBool(nullptr, "Drivers", true, iniPath);
-    cfg.MachineCustomize = ReadIniBool(nullptr, "MachineCustomize", true, iniPath);
-    cfg.ColorPresets     = ReadIniBool(nullptr, "ColorPresets", true, iniPath);
-    cfg.MirrorSpeed      = ReadIniBool(nullptr, "MirrorSpeed", true, iniPath);
-    cfg.Music            = ReadIniBool(nullptr, "Music", true, iniPath);
-    cfg.GadgetPlate      = ReadIniBool(nullptr, "GadgetPlate", true, iniPath);
-    cfg.Challenges       = ReadIniBool(nullptr, "Challenges", true, iniPath);
-    cfg.Achievements     = ReadIniBool(nullptr, "Achievements", false, iniPath);
-
-    cfg.StagesDLC        = ReadIniBool(nullptr, "StagesDLC", true, iniPath);
-    cfg.StagesGPOpen     = ReadIniBool(nullptr, "StagesGPOpen", true, iniPath);
-    cfg.StagesSecret     = ReadIniBool(nullptr, "StagesSecret", true, iniPath);
-
-    cfg.NF_CompleteMachine = ReadIniBool(nullptr, "NF_CompleteMachine", true, iniPath);
-    cfg.NF_Sticker       = ReadIniBool(nullptr, "NF_Sticker", true, iniPath);
-    cfg.NF_ColorPreset   = ReadIniBool(nullptr, "NF_ColorPreset", true, iniPath);
-    cfg.NF_Gadget        = ReadIniBool(nullptr, "NF_Gadget", true, iniPath);
-    cfg.NF_PartsSpeed    = ReadIniBool(nullptr, "NF_PartsSpeed", true, iniPath);
-    cfg.NF_PartsAccel    = ReadIniBool(nullptr, "NF_PartsAccel", true, iniPath);
-    cfg.NF_PartsHandle   = ReadIniBool(nullptr, "NF_PartsHandle", true, iniPath);
-    cfg.NF_PartsPower    = ReadIniBool(nullptr, "NF_PartsPower", true, iniPath);
-    cfg.NF_PartsDash     = ReadIniBool(nullptr, "NF_PartsDash", true, iniPath);
-    cfg.NF_Horn          = ReadIniBool(nullptr, "NF_Horn", true, iniPath);
-    cfg.NF_HonorTitles   = ReadIniBool(nullptr, "NF_HonorTitles", true, iniPath);
-    cfg.NF_Jukebox       = ReadIniBool(nullptr, "NF_Jukebox", true, iniPath);
-    cfg.NF_Challenges    = ReadIniBool(nullptr, "NF_Challenges", true, iniPath);
-    cfg.NF_Rewards       = ReadIniBool(nullptr, "NF_Rewards", true, iniPath);
-
-    std::cout << "[SRCW] Config loaded from " << iniPath << "\n";
-    std::cout << "[SRCW] PhaseDelay=" << cfg.PhaseDelayMs << "ms\n";
-}
-
-void WriteDefaultConfig()
-{
-    FILE* f = nullptr;
-    fopen_s(&f, ConfigFileName, "w");
-    if (!f) return;
-
-    fprintf(f, "; SRCW Unlocker Config\n");
-    fprintf(f, "; 1=enable, 0=disable\n\n");
-    fprintf(f, "Console 0\n");
-    fprintf(f, "ClearOnly 0\n");
-    fprintf(f, "PhaseDelayMs 750\n\n");
-    fprintf(f, "; Trigger: 0=autorun on menu load, 1=wait for hotkey\n");
-    fprintf(f, "HotkeyEnabled 0\n");
-    fprintf(f, "UnlockKey 192\n\n");
-    fprintf(f, "; --- DLC Gate Removal ---\n");
-    fprintf(f, "ClearCharaDLC 1\n");
-    fprintf(f, "ClearMachineDLC 1\n");
-    fprintf(f, "ClearHonorDLC 1\n");
-    fprintf(f, "ClearAlbumDLC 1\n");
-    fprintf(f, "ClearStickerDLC 1\n\n");
-    fprintf(f, "; --- Save Data Unlocks ---\n");
-    fprintf(f, "HonorTitles 1\n");
-    fprintf(f, "Drivers 1\n");
-    fprintf(f, "MachineCustomize 1\n");
-    fprintf(f, "ColorPresets 1\n");
-    fprintf(f, "MirrorSpeed 1\n");
-    fprintf(f, "Music 1\n");
-    fprintf(f, "GadgetPlate 1\n");
-    fprintf(f, "Challenges 1\n\n");
-    fprintf(f, "; WARNING: Achievements permanently unlock on Steam\n");
-    fprintf(f, "Achievements 0\n\n");
-    fprintf(f, "; --- Stage Unlocks ---\n");
-    fprintf(f, "StagesDLC 1\n");
-    fprintf(f, "StagesGPOpen 1\n");
-    fprintf(f, "StagesSecret 1\n\n");
-    fprintf(f, "; --- New Flag Clearing ---\n");
-    fprintf(f, "NF_CompleteMachine 1\n");
-    fprintf(f, "NF_Sticker 1\n");
-    fprintf(f, "NF_ColorPreset 1\n");
-    fprintf(f, "NF_Gadget 1\n");
-    fprintf(f, "NF_PartsSpeed 1\n");
-    fprintf(f, "NF_PartsAccel 1\n");
-    fprintf(f, "NF_PartsHandle 1\n");
-    fprintf(f, "NF_PartsPower 1\n");
-    fprintf(f, "NF_PartsDash 1\n");
-    fprintf(f, "NF_Horn 1\n");
-    fprintf(f, "NF_HonorTitles 1\n");
-    fprintf(f, "NF_Jukebox 1\n");
-    fprintf(f, "NF_Challenges 1\n");
-    fprintf(f, "NF_Rewards 1\n");
-    fclose(f);
-}
-
-// =============================================================================
 // Hook & Clear
 // =============================================================================
 void HookGame()
 {
-    LoadConfig();
+    // LoadConfig() is already called in dllmain.cpp Init()
+    // No need to call again here
 
     bool bHooked = false;
     while (!bHooked) {
@@ -347,9 +226,6 @@ bool RunUnlockPhase(int phase)
     case 10: { if (cfg.Challenges) { Reflect::CallStatic("CheatChallenge", "AllChallengeClear"); Reflect::CallStaticBool("AppSaveGameHelper", "SetCompleteMainChallenge", true); Reflect::CallStaticBool("AppSaveGameHelper", "SetCompleteSpecialChallenge", true); int32_t pc = Reflect::CallStaticRetInt32("ChallengeStatsUtility", "GetChallengeProgressCount"); Reflect::CallStaticInt32("AppSaveGameHelper", "SetChallengeShowProgress", pc); Reflect::CallStaticFloat("AppSaveGameHelper", "SetChallengeLastShowProgress", 1.0f); std::cout << "[Phase 10] Challenges\n"; } return true; }
 
     case 11: {
-        // Super Sonic save-data unlock (always enabled if MirrorSpeed is on, or can be controlled separately)
-        // Since SuperSonicAll was removed from config, we use MirrorSpeed as the trigger
-        // or you can add a separate config option back if needed
         if (cfg.MirrorSpeed) {
             Reflect::CallStaticUInt8("AppSaveGameHelper", "SetDriverSelectable", kSuperSonicDriverId);
             Reflect::CallStaticUInt8("AppSaveGameHelper", "ClearDriverNew", kSuperSonicDriverId);
